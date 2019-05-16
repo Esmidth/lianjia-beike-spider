@@ -15,6 +15,7 @@ from lib.utility.path import *
 from lib.zone.area import *
 from lib.utility.log import *
 import lib.utility.version
+import codecs
 
 
 class ErShouSpider(BaseSpider):
@@ -29,7 +30,7 @@ class ErShouSpider(BaseSpider):
         """
         district_name = area_dict.get(area_name, "")
         csv_file = self.today_path + "/{0}_{1}.csv".format(district_name, area_name)
-        with open(csv_file, "w") as f:
+        with open(csv_file, encoding='gb18030', mode='w+') as f:
             # 开始获得需要的板块数据
             ershous = self.get_area_ershou_info(city_name, area_name)
             # 锁定，多线程读写
@@ -39,8 +40,13 @@ class ErShouSpider(BaseSpider):
                 self.mutex.release()
             if fmt == "csv":
                 for ershou in ershous:
+                    # 写入中文报错
                     # print(date_string + "," + xiaoqu.text())
-                    f.write(self.date_string + "," + ershou.text() + "\n")
+                    # f.write(str(self.date_string) + ',' + str(ershou.text()) + "\n")
+                    # print(str(self.date_string)+','+str(ershou.text())+'\n')
+                    # print(type(ershou.text()))
+                    f.write(self.date_string + ',' + ershou.text() + '\n')
+
         print("Finish crawl area: " + area_name + ", save data to : " + csv_file)
 
     @staticmethod
@@ -99,7 +105,6 @@ class ErShouSpider(BaseSpider):
                 desc = desc.text.replace("\n", "").strip()
                 pic = pic.get('data-original').strip()
                 # print(pic)
-
 
                 # 作为对象保存
                 ershou = ErShou(chinese_district, chinese_area, name, price, desc, pic)
